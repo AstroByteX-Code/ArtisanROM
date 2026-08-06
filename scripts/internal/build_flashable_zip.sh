@@ -18,7 +18,7 @@ TMP_DIR="$OUT_DIR/zip"
 ROM_STATUS="UNOFFICIAL"
 $ROM_IS_OFFICIAL && ROM_STATUS="OFFICIAL"
 
-ZIP_FILE_SUFFIX="-sign.zip"
+ZIP_FILE_SUFFIX=".zip"
 $DEBUG && ! $ROM_IS_OFFICIAL && ZIP_FILE_SUFFIX=".zip"
 
 ZIP_FILE_NAME="ArtisanROM_${ROM_STATUS}_${ROM_VERSION}_$(date +%Y%m%d)_${TARGET_CODENAME}${ZIP_FILE_SUFFIX}"
@@ -284,6 +284,7 @@ GENERATE_UPDATER_SCRIPT()
     [ -f "$TMP_DIR/vendor_dlkm.new.dat${BROTLI_EXTENSION}" ] && HAS_VENDOR_DLKM=true && PARTITION_COUNT=$((PARTITION_COUNT + 1))
     [ -f "$TMP_DIR/odm_dlkm.new.dat${BROTLI_EXTENSION}" ] && HAS_ODM_DLKM=true && PARTITION_COUNT=$((PARTITION_COUNT + 1))
     [ -f "$TMP_DIR/system_dlkm.new.dat${BROTLI_EXTENSION}" ] && HAS_SYSTEM_DLKM=true && PARTITION_COUNT=$((PARTITION_COUNT + 1))
+    [ -f "$SRC_DIR/target/$TARGET_CODENAME/postinstall.edify" ] && HAS_POST_INSTALL=true
 
     {
         if [ -n "$TARGET_ASSERT_MODEL" ]; then
@@ -442,6 +443,10 @@ GENERATE_UPDATER_SCRIPT()
         if [ -f "$SRC_DIR/target/$TARGET_CODENAME/installer/install-end.edify" ]; then
             cat "$SRC_DIR/target/$TARGET_CODENAME/installer/install-end.edify"
         fi
+        
+        if $HAS_POST_INSTALL; then
+            cat "$SRC_DIR/target/$TARGET_CODENAME/postinstall.edify"
+        fi
 
         echo    'set_progress(1.000000);'
         echo    'ui_print("****************************************");'
@@ -484,6 +489,7 @@ PRINT_HEADER()
     echo -n "Welcome to ArtisanROM $ROM_CODENAME $ROM_VERSION for $TARGET_NAME!"
     echo    '");'
     echo    'ui_print("ArtisanROM developed by Android Artisan @XDAforums");'
+    echo    'ui_print("SM8250 Devices Build by Code_by_Mian @XDAforums");'
     echo    'ui_print("UN1CA build system coded by salvo_giangri @XDAforums");'
     echo    'ui_print("Special thanks to all ArtisanROM Maintainers, Contribuitors and Testers");'
     echo    'ui_print("****************************************************");'
@@ -623,7 +629,7 @@ EVAL "rm -f \"$TMP_DIR/rom.zip\"" || exit 1
 EVAL "cd \"$TMP_DIR\" && 7z a -tzip -mx=0 -mmt=$(nproc) $TMP_DIR/rom.zip -r *.patch.dat -ir!META-INF/com/android/* -i!*.new.dat.br" || exit 1
 EVAL "cd \"$TMP_DIR\" && 7z a -tzip -mx=3 -mmt=$(nproc) $TMP_DIR/rom.zip -r * -xr!META-INF/com/android/* -x!*.new.dat.br -x!*.patch.dat -x!rom.zip" || exit 1
 
-if ! $DEBUG || $ROM_IS_OFFICIAL; then
+if $ROM_IS_OFFICIAL; then
     LOG "- Signing zip"
     EVAL "signapk -w \"$PUBLIC_KEY_PATH\" \"$PRIVATE_KEY_PATH\" \"$TMP_DIR/rom.zip\" \"$OUT_DIR/$ZIP_FILE_NAME\"" || exit 1
     rm -f "$TMP_DIR/rom.zip"
