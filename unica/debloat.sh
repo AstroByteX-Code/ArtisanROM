@@ -148,6 +148,10 @@ SYSTEM_DEBLOAT+="$(find "$WORK_DIR/system" -type d -name "*TTSVoice*" | sed "s|$
 SYSTEM_DEBLOAT+="
 system/app/KidsHome_Installer
 "
+# Auto Blocker
+SYSTEM_DEBLOAT+="
+system/app/Rampart
+"
 
 # Samsung Notes
 SYSTEM_DEBLOAT+="
@@ -266,6 +270,11 @@ system/priv-app/OfflineLanguageModel_stub
 # Google Messages
 PRODUCT_DEBLOAT+="
 priv-app/Messages
+"
+
+# Google
+PRODUCT_DEBLOAT+="
+priv-app/Velvet
 "
 
 # Samsung Pass
