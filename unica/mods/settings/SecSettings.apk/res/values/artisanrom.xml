@@ -120,4 +120,9 @@ Any form of contribution, suggestions, bug report or feature request for the pro
     <string name="maintainer_22_role">Tester</string>
     <string name="maintainer_22_github"></string>
     <string name="maintainer_22_avatar">brky_avatar</string>
+    
+    <string name="maintainer_23_name">0xrarelyseen</string>
+    <string name="maintainer_23_role">x1q Tester</string>
+    <string name="maintainer_23_github">0xrarelyseen</string>
+    <string name="maintainer_23_avatar">0xrarelyseen_avatar</string>
 </resources>
