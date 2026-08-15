@@ -1,4 +1,4 @@
-name: Build sm8250
+name: Build sm8250-ab
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [x1q, y2q, z3q]
+        target: [ c2q ]
 
     steps:
       - name: Checkout repo
