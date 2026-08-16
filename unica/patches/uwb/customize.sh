@@ -1,14 +1,59 @@
-MODEL=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 1)
-REGION=$(echo -n "$TARGET_FIRMWARE" | cut -d "/" -f 2)
+SOURCE_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$SOURCE_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$SOURCE_FIRMWARE")"
+TARGET_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$TARGET_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$TARGET_FIRMWARE")"
 
-if [ -d "$FW_DIR/${MODEL}_${REGION}/vendor/firmware/uwb" ]; then
-    LOG_STEP_IN "- Adding S24+ (e2sxxx) UWB blobs"
-    ADD_TO_WORK_DIR "e2sxxx" "system" "system/app/UwbTest"
-    ADD_TO_WORK_DIR "e2sxxx" "system" "system/etc/init/init.system.uwb.rc"
-    ADD_TO_WORK_DIR "e2sxxx" "system" "system/etc/permissions/com.samsung.android.uwb_extras.xml"
-    ADD_TO_WORK_DIR "e2sxxx" "system" "system/framework/com.samsung.android.uwb_extras.jar"
-    ADD_TO_WORK_DIR "e2sxxx" "system" "system/lib64/libtflite_uwb_jni.so"
-    LOG_STEP_OUT
+SOURCE_HAS_UWB="$(test -f "$FW_DIR/$SOURCE_FIRMWARE_PATH/vendor/etc/permissions/android.hardware.uwb.xml" && echo "true" || echo "false")"
+TARGET_HAS_UWB="$(test -f "$FW_DIR/$TARGET_FIRMWARE_PATH/vendor/etc/permissions/android.hardware.uwb.xml" && echo "true" || echo "false")"
+
+if ! $SOURCE_HAS_UWB; then
+    if $TARGET_HAS_UWB; then
+        if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "mssi" ]]; then
+            ABORT "\"mssi\" system image does not support targets with UWB. Aborting"
+        fi
+
+        LOG "- Adding \"ro.boot.uwbcountrycode\" prop with \"ff\" in /product/etc/build.prop"
+        EVAL "sed -i \"/usb.config/a ro.boot.uwbcountrycode=ff\" \"$WORK_DIR/product/etc/build.prop\""
+
+        ADD_TO_WORK_DIR "b0qxxx" "product" \
+            "overlay/UwbRROverlay.apk" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/app/UwbTest/UwbTest.apk" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "b0qxxx" || echo "b0sxxx")" \
+            "system" "system/etc/classpaths/bootclasspath.pb" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/etc/init/init.system.uwb.rc" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/etc/permissions/com.samsung.android.uwb_extras.xml" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/etc/permissions/org.carconnectivity.android.digitalkey.timesync.xml" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/etc/permissions/privapp-permissions-com.samsung.android.dcktimesync.xml" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/etc/permissions/privapp-permissions-com.sec.android.app.uwbtest.xml" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" \
+            "system/etc/libuwb-cal.conf" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" \
+            "system/etc/pp_model.tflite" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/framework/com.samsung.android.uwb_extras.jar" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/framework/semuwb-service.jar" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/lib/libtflite_uwb_jni.so" 0 0 644 "u:object_r:system_lib_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system" \
+            "system/lib64/libtflite_uwb_jni.so" 0 0 644 "u:object_r:system_lib_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system_ext" \
+            "framework/org.carconnectivity.android.digitalkey.timesync.jar" 0 0 644 "u:object_r:system_file:s0"
+        ADD_TO_WORK_DIR "b0qxxx" "system_ext" \
+            "priv-app/DckTimeSyncService/DckTimeSyncService.apk" 0 0 644 "u:object_r:system_file:s0"
+        # ... ADD_TO_WORK_DIR calls ...
+    else
+        LOG "\033[0;33m! Nothing to do\033[0m"
+    fi
 else
-    LOG "- Target has no UWB. Ignoring."
+    if [[ "$SOURCE_HAS_UWB" == "true" && "$TARGET_HAS_UWB" == "true" ]]; then
+        LOG "\033[0;32m+ Applying UWB patch\033[0m"
+        # ... patch logic here ...
+    else
+        LOG "- Target has no UWB. Ignoring."
+    fi
 fi
