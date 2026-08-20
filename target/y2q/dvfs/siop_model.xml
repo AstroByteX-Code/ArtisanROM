@@ -184,10 +184,9 @@
         </scenario>
 
         <scenario name="Heavyuser" tempType="LRP" priority="1" >
-            <limiter name="CPUFreqMax" cond="for_temporary" temp="450:480" value="-1:1747200" />
-            <limiter name="GPUFreqMax" cond="for_temporary" temp="420:450:500" value="-1:845:670:525:305" />
+            <limiter name="CPUFreqMax" cond="for_temporary" temp="450:480"     value="-1:1747200"             />
+            <limiter name="GPUFreqMax" cond="for_temporary" temp="420:450:500" value="-1:525:305" />
         </scenario>
-
 
         <scenario name="FotaDownload:com.wssyncmldm" tempType="LRP" >
             <limiter name="Charging" value="70" />
@@ -219,10 +218,9 @@
 
         <scenario name="HeavyLoadApp" tempType="SKIN" priority="1">
             <limiter name="CPUFreqMax" temp="340" value="-1:1632000:1516800:1075200:854400" />
-            <limiter name="GPUFreqMax" value="845:670:525:490:441:400:305:150" />
+            <limiter name="GPUFreqMax"                        value="305" />
             <limiter name="Brightness" temp="410:430:530:550" value="224:169:169:104" />
         </scenario>
-
 
         <scenario name="MultiWindow" tempType="LRP" priority="1">
             <limiter name="CPUFreqMax" step="0" temp="360" value="-1:1516800:1305600:1075200" />
@@ -281,16 +279,13 @@
         </scenario_group>
 
         <scenario_group name="GameThermalGpuControl" tempType="LRP" >
-            <scenario id="-4" limiter="GPUFreqMax"                             value="150" />
             <scenario id="-3" limiter="GPUFreqMax"                             value="305" />
             <scenario id="-2" limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:400:305" />
             <scenario id="-1" limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:441:400" />
             <scenario id="0"  limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:490:441" />
             <scenario id="1"  limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:525:490" />
             <scenario id="2"  limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:587:525" />
-            <scenario id="3"  limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:670:587" />
-            <scenario id="4"  limiter="GPUFreqMax" step="0" temp="370:380:400" value="-1:845:670" />
-            <scenario id="5"  limiter="GPUFreqMax"                             value="-1" />
+            <scenario id="3"  limiter="GPUFreqMax"                             value="-1" />
         </scenario_group>
 
     </scenarios>
