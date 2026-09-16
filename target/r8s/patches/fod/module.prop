@@ -1,4 +1,4 @@
 id=fod
 name=FOD Brightness Fix
 author=Android-Artisan, GhasemzadehFard-Dev
-description=Inline FOD brightness scaling in getAlphaMaskLevel for S908B-based ports
+description=Keep S20 FE FOD overlay brightness at or above 70 percent

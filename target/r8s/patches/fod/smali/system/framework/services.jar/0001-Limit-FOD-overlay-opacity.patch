@@ -1,0 +1,68 @@
+From 97cb72ff46ce2e60ebd95ef57aac147fa9007737 Mon Sep 17 00:00:00 2001
+From: Android-Artisan <romartisan2025@gmail.com>
+Date: Wed, 2 Sep 2026 01:25:00 +0330
+Subject: [PATCH] Apply a twilight-based FOD brightness floor
+
+---
+ .../SemDisplaySolutionManagerService.smali     | 45 +++++++++++++++++++++++++++-
+ 1 file changed, 44 insertions(+), 1 deletion(-)
+
+diff --git a/smali_classes2/com/samsung/android/displaysolution/SemDisplaySolutionManagerService.smali b/smali_classes2/com/samsung/android/displaysolution/SemDisplaySolutionManagerService.smali
+--- a/smali_classes2/com/samsung/android/displaysolution/SemDisplaySolutionManagerService.smali
++++ b/smali_classes2/com/samsung/android/displaysolution/SemDisplaySolutionManagerService.smali
+@@ -1787,4 +1787,4 @@
+ .method public final getAlphaMaskLevel(FFF)F
+-    .locals 7
++    .locals 10
+ 
+     const/4 v5, 0x0
+@@ -1922,4 +1922,47 @@
+     double-to-float p0, p2
+ 
++    const-class v8, Lcom/android/server/twilight/TwilightManager;
++    invoke-static {v8}, Lcom/android/server/LocalServices;->getService(Ljava/lang/Class;)Ljava/lang/Object;
++    move-result-object v8
++    check-cast v8, Lcom/android/server/twilight/TwilightManager;
++    if-eqz v8, :fod_day_floor
++    check-cast v8, Lcom/android/server/twilight/TwilightService$1;
++    invoke-virtual {v8}, Lcom/android/server/twilight/TwilightService$1;->getLastTwilightState()Lcom/android/server/twilight/TwilightState;
++    move-result-object v8
++    if-eqz v8, :fod_day_floor
++    invoke-virtual {v8}, Lcom/android/server/twilight/TwilightState;->isNight()Z
++    move-result v9
++    if-nez v9, :fod_night_floor
++    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
++    move-result-wide v0
++    iget-wide v2, v8, Lcom/android/server/twilight/TwilightState;->mSunriseTimeMillis:J
++    iget-wide v4, v8, Lcom/android/server/twilight/TwilightState;->mSunsetTimeMillis:J
++    sub-long v6, v4, v2
++    const-wide/16 p1, 0x4
++    div-long/2addr v6, p1
++    add-long/2addr v2, v6
++    sub-long/2addr v4, v6
++    cmp-long v9, v0, v2
++    if-gez v9, :fod_shoulder_floor
++    cmp-long v9, v0, v4
++    if-ltz v9, :fod_shoulder_floor
++    const/high16 v8, 0x3f400000    # 0.75f
++    goto :fod_twilight_floor_ready
++    :fod_night_floor
++    const v8, 0x3e4ccccd    # 0.2f
++    goto :fod_twilight_floor_ready
++    :fod_day_floor
++    :fod_shoulder_floor
++    const/high16 v8, 0x3f000000    # 0.5f
++    :fod_twilight_floor_ready
++    move v7, v8
++    :fod_floor_ready
++    const/high16 v0, 0x3f800000    # 1.0f
++    sub-float v7, v0, v7
++    cmpl-float v0, p0, v7
++    if-lez v0, :fod_alpha_end
++    move p0, v7
++    :fod_alpha_end
++
+     return p0
+ .end method
+-- 
+2.53.0
